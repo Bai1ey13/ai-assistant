@@ -4,18 +4,17 @@ import time
 import json
 import re
 import requests
-import pytesseract
+import pytesseract   # 修正拼写
 from PIL import Image
 from openai import OpenAI
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import os
 from dotenv import load_dotenv
 
-
-load_dotenv()  # 加载 .env 文件中的变量
+# 加载环境变量（指定文件名）
+load_dotenv(dotenv_path="AI_assistant.env")
 
 # 指定 tesseract.exe
 pytesseract.pytesseract.tesseract_cmd = r'E:\tesseract-ocr\tesseract.exe'
@@ -25,6 +24,7 @@ st.set_page_config(page_title="通用RAG智能AI助教", page_icon="🌐")
 
 # ==================== 配置 ====================
 API_KEY = os.getenv("API_KEY")
+print("DEBUG: API_KEY =", API_KEY)
 if not API_KEY:
     raise ValueError("请在 .env 文件中设置 API_KEY")
 client = OpenAI(api_key=API_KEY, base_url="https://dashscope.aliyuncs.com/compatible-mode/v1")
