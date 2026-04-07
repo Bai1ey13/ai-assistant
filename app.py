@@ -11,15 +11,22 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()  # 加载 .env 文件中的变量
 
 # 指定 tesseract.exe
 pytesseract.pytesseract.tesseract_cmd = r'E:\tesseract-ocr\tesseract.exe'
 
 # ==================== 页面配置 ====================
-st.set_page_config(page_title="计算机网络AI助教", page_icon="🌐")
+st.set_page_config(page_title="通用RAG智能AI助教", page_icon="🌐")
 
 # ==================== 配置 ====================
-API_KEY = "sk-6b22072a630f44648a4bd89525de5887"
+API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+    raise ValueError("请在 .env 文件中设置 API_KEY")
 client = OpenAI(api_key=API_KEY, base_url="https://dashscope.aliyuncs.com/compatible-mode/v1")
 
 # ==================== 教材知识库 ====================
@@ -122,10 +129,10 @@ def is_meta_question(query):
 
 def meta_answer(query, mode):
     if "你的功能" in query or "你能做什么" in query or "你的作用" in query:
-        return f"""我是《计算机网络》课程的AI助教，我可以：
-- 解答教材中的知识点
-- 指导实验操作步骤
-- 提供习题练习
+        return f"""我是您的智能AI助教，我可以：
+- 基于您上的文档解答问题
+- 支持一般检索(单次RAG）与深度检索（多轮评估+查询改写）
+- 提供飞鼠机器人实时问答服务，问答内容基于AI通用智能+您上传的文档
 
 当前模式为：**{mode}**。你可以通过侧边栏切换模式。"""
     elif "什么模式" in query or "当前模式" in query or "模式是什么" in query:
@@ -181,7 +188,7 @@ def get_ai_answer(user_message: str, mode: str = "教材检索（一般）", con
     if is_meta_question(user_message):
         return meta_answer(user_message, mode)
     if mode == "通用模式":
-        system_prompt = f"""你是计算机网络助教。请用通俗易懂、内容丰富的语言回答用户的问题，不基于特定教材。可以适当举例。
+        system_prompt = f"""你是AI智能助教。请用通俗易懂、内容丰富的语言回答用户的问题，不基于特定教材。可以适当举例。
 
 用户问题：{user_message}"""
     else:
@@ -192,7 +199,7 @@ def get_ai_answer(user_message: str, mode: str = "教材检索（一般）", con
                 context = deep_retrieve(user_message)
         if len(context) > 2500:
             context = context[:2500]
-        system_prompt = f"""你是计算机网络助教。请基于以下教材内容回答用户的问题。要求：
+        system_prompt = f"""你是AI智能助教。请基于以下教材内容回答用户的问题。要求：
 - 用自己的话概括，不要逐字复述。
 - 回答要详细、完整，尽可能解释清楚原理，不要过度压缩字数。
 - 如果教材内容与问题完全不相关，请明确说“教材中没有找到相关信息”，然后可以用你的通用知识简要补充。
@@ -210,7 +217,7 @@ def get_ai_answer(user_message: str, mode: str = "教材检索（一般）", con
     return response.choices[0].message.content
 
 # ==================== Streamlit 界面 ====================
-st.title("📚 中职《计算机网络》AI助教")
+st.title("📚 通用RAG智能AI助教")
 st.markdown("---")
 
 # 初始化 session_state
@@ -339,7 +346,7 @@ if prompt := st.chat_input("请输入您的问题..."):
             with st.expander("📖 查看检索到的教材内容（共 " + str(len(context)) + " 字符）"):
                 st.markdown(context)
         with st.chat_message("assistant"):
-            with st.spinner("AI 助教正在思考..."):
+            with st.spinner("AI助教正在思考..."):
                 answer = get_ai_answer(prompt, mode=current_mode, context=context)
                 st.markdown(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})

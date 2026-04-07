@@ -14,8 +14,8 @@ processed_events = set()
 app = Flask(__name__)
 
 # ========== 飞书凭证 ==========
-APP_ID = "cli_a944f5c769b81cbb"
-APP_SECRET = "oZ6LLGZUugnuiYjx4ciTBddYQSHSMrGw"  #
+APP_ID = os.getenv("APP_ID")
+APP_SECRET = os.getenv("APP_SECRET")
 
 
 # ========== 获取 tenant_access_token ==========
