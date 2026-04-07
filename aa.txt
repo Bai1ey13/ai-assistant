@@ -1,0 +1,47 @@
+import streamlit as st
+from openai import OpenAI
+
+# 页面配置
+st.set_page_config(page_title="计算机网络AI助教", page_icon="🌐")
+st.title("📚 中职《计算机网络》AI助教")
+st.markdown("---")
+
+# 初始化 OpenAI 客户端（使用阿里通义千问接口）
+API_KEY = "sk-6b22072a630f44648a4bd89525de5887"  # 您的API密钥
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
+
+# 初始化聊天历史
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": "你是一个中职《计算机网络》课程的AI助教，回答要通俗易懂，适合中职学生理解。如果涉及操作步骤，要详细说明。"}
+    ]
+
+# 显示历史消息
+for msg in st.session_state.messages:
+    if msg["role"] != "system":
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+# 用户输入
+if prompt := st.chat_input("请输入您的问题..."):
+    # 添加用户消息
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # 调用通义千问
+    with st.chat_message("assistant"):
+        with st.spinner("AI助教正在思考..."):
+            try:
+                response = client.chat.completions.create(
+                    model="qwen-turbo",
+                    messages=st.session_state.messages
+                )
+                answer = response.choices[0].message.content
+                st.markdown(answer)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+            except Exception as e:
+                st.error(f"出错了：{e}")
