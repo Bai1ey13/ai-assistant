@@ -1,0 +1,11 @@
+__pycache__/
+chroma_db/
+教材/
+教材库/
+*.db
+.env
+AI_assistant.env
+aa.txt
+bkft.py
+utf8.py
+str
